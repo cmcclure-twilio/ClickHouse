@@ -3,14 +3,23 @@
 #if USE_PARQUET && USE_DELTA_KERNEL_RS
 #include <Storages/ObjectStorage/DataLakes/DeltaLakeMetadataDeltaKernel.h>
 #include <Storages/ObjectStorage/DataLakes/DeltaLake/TableSnapshot.h>
+#include <Storages/ObjectStorage/DataLakes/DeltaLake/TableSnapshotOptimized.h>
+#include <Storages/ObjectStorage/DataLakes/DeltaLake/TableSnapshotCache.h>
 #include <Storages/ObjectStorage/DataLakes/DeltaLake/KernelUtils.h>
+#include <Storages/ObjectStorage/DataLakes/DeltaLake/KernelHelperOptimized.h>
 #include <Storages/ObjectStorage/DataLakes/DeltaLake/DeltaLakeSink.h>
 #include <Storages/ObjectStorage/DataLakes/DeltaLake/DeltaLakePartitionedSink.h>
 #include <Storages/ObjectStorage/DataLakes/DeltaLake/WriteTransaction.h>
 #include <Common/logger_useful.h>
+#include <Core/Settings.h>
 
 namespace DB
 {
+
+namespace Setting
+{
+    extern const SettingsBool delta_lake_enable_optimized_s3_client;
+}
 
 [[maybe_unused]] static void tracingCallback(struct ffi::Event event)
 {
@@ -54,13 +63,30 @@ DeltaLakeMetadataDeltaKernel::DeltaLakeMetadataDeltaKernel(
     StorageObjectStorageConfigurationWeakPtr configuration_,
     ContextPtr context)
     : log(getLogger("DeltaLakeMetadata"))
-    , kernel_helper(DB::getKernelHelper(configuration_.lock(), object_storage))
-    , table_snapshot(std::make_shared<DeltaLake::TableSnapshot>(
-            kernel_helper,
-            object_storage,
-            context,
-            log))
 {
+    const auto & settings = context->getSettingsRef();
+    bool use_optimized = settings[Setting::delta_lake_enable_optimized_s3_client];
+    
+    if (use_optimized)
+    {
+        LOG_TRACE(log, "Using optimized Delta Lake client with enhanced S3 performance and caching");
+        kernel_helper = DB::getKernelHelperOptimized(configuration_.lock(), object_storage);
+    }
+    else
+    {
+        LOG_TRACE(log, "Using standard Delta Lake client");
+        kernel_helper = DB::getKernelHelper(configuration_.lock(), object_storage);
+    }
+    
+    /// Use cache to get or create table snapshot
+    auto cache_key = DeltaLake::TableSnapshotCache::generateKey(*kernel_helper, context);
+    table_snapshot = DeltaLake::TableSnapshotCache::instance().getOrCreate(
+        cache_key,
+        kernel_helper,
+        object_storage,
+        context,
+        log);
+
 #ifdef DEBUG_OR_SANITIZER_BUILD
     //ffi::enable_event_tracing(tracingCallback, ffi::Level::TRACE);
 #endif
