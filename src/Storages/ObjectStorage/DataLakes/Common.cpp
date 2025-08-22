@@ -39,7 +39,7 @@ std::vector<String> listFilesOptimized(
 {
     auto key = std::filesystem::path(configuration.getPathForRead().path) / prefix;
 
-    bool use_optimized = true;
+    bool use_optimized = false;
     if (context)
     {
         const auto & settings = context->getSettingsRef();
