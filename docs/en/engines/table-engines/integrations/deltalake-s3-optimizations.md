@@ -113,7 +113,7 @@ SET delta_lake_s3_request_timeout_ms = 30000;
 SET delta_lake_s3_connect_timeout_ms = 5000;
 SET delta_lake_s3_list_batch_size = 1000;
 
--- Caching configuration  
+-- Caching configuration
 SET delta_lake_snapshot_cache_size = 1000;
 SET delta_lake_snapshot_cache_ttl_seconds = 3600;
 
@@ -141,7 +141,7 @@ SET delta_lake_async_init_timeout_ms = 60000;
 
 ### Before Optimizations:
 - **Snapshot initialization:** 35+ seconds
-- **S3 listing:** 10+ seconds for large tables  
+- **S3 listing:** 10+ seconds for large tables
 - **Metadata processing:** 5+ seconds sequential
 - **Total query time:** 50+ seconds
 
@@ -193,11 +193,11 @@ SET delta_lake_snapshot_cache_ttl_seconds = 300;
 ### Performance Checking:
 ```sql
 -- Check if optimizations are working
-SELECT * FROM system.events 
+SELECT * FROM system.events
 WHERE event LIKE '%DeltaLake%' OR event LIKE '%S3Optimized%';
 
 -- Monitor query performance
-SELECT query_duration_ms FROM system.query_log 
+SELECT query_duration_ms FROM system.query_log
 WHERE query LIKE '%delta%' AND query_duration_ms > 1000;
 ```
 
@@ -221,7 +221,7 @@ WHERE query LIKE '%delta%' AND query_duration_ms > 1000;
 ## Future Enhancements
 
 1. **Query-level caching** - Cache query results for identical filters
-2. **Predictive prefetching** - Preload snapshots based on usage patterns  
+2. **Predictive prefetching** - Preload snapshots based on usage patterns
 3. **Multi-region optimization** - Intelligent S3 endpoint selection
 4. **Adaptive tuning** - Auto-adjust settings based on performance metrics
 5. **Integration with ClickHouse caches** - Leverage existing caching infrastructure

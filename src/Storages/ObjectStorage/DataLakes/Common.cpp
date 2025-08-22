@@ -34,12 +34,12 @@ std::vector<String> listFiles(
 std::vector<String> listFilesOptimized(
     const IObjectStorage & object_storage,
     const StorageObjectStorageConfiguration & configuration,
-    const String & prefix, 
+    const String & prefix,
     const String & suffix,
     ContextPtr context)
 {
     auto key = std::filesystem::path(configuration.getPathForRead().path) / prefix;
-    
+
     /// Check if optimizations are enabled
     bool use_optimized = true;
     if (context)
@@ -52,12 +52,12 @@ std::vector<String> listFilesOptimized(
             use_optimized = false;
         }
     }
-    
+
     if (!use_optimized)
     {
         return listFiles(object_storage, configuration, prefix, suffix);
     }
-    
+
     /// Fallback to standard implementation for now
     return listFiles(object_storage, configuration, prefix, suffix);
 }

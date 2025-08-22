@@ -94,26 +94,26 @@ public:
         /// 2. Setting appropriate timeouts to prevent long waits
         /// 3. Enabling request retries with backoff
         /// 4. Optimizing buffer sizes for better throughput
-        
+
         /// Connection and concurrency settings
         set_option("aws_max_connections", "50");  // Increase from default ~10 to 50
         set_option("aws_pool_idle_timeout_seconds", "30");  // Keep connections alive longer
         set_option("aws_connect_timeout_seconds", "10");    // Reasonable connection timeout
         set_option("aws_request_timeout_seconds", "30");    // Increase from default ~3 to 30
-        
+
         /// Retry configuration for reliability
         set_option("aws_retry_mode", "adaptive");           // Use adaptive retry mode
         set_option("aws_max_attempts", "5");                // Allow up to 5 retry attempts
-        
+
         /// Performance tuning
         set_option("aws_multipart_threshold", "8388608");   // 8MB threshold for multipart uploads
         set_option("aws_copy_if_not_exists", "false");      // Skip expensive existence checks
         set_option("aws_metadata_timeout", "2");            // Fast metadata operations timeout
-        
+
         /// Enable HTTP/2 and keep-alive for better performance
         set_option("aws_use_virtual_addressing", "true");   // Use virtual-hosted style requests
         set_option("aws_use_dual_stack", "true");          // Enable dual-stack endpoints if available
-        
+
         /// Buffer size optimizations
         set_option("aws_buffer_time", "5");                 // 5 second buffer time
         set_option("aws_request_min_throughput_bytes_per_second", "1048576"); // 1MB/s minimum throughput

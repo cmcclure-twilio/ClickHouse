@@ -32,14 +32,14 @@ ThreadPool & TableSnapshotOptimized::getAsyncPool()
 void TableSnapshotOptimized::preWarmSnapshot() const
 {
     std::lock_guard lock(snapshot_future_mutex);
-    
+
     if (snapshot_warming.load() || snapshot_initialized.load())
         return;
-        
+
     snapshot_warming = true;
-    
+
     LOG_TRACE(log, "Starting async snapshot pre-warming");
-    
+
     /// Start the async initialization
     snapshot_future = getAsyncPool().scheduleOrThrow([this]()
     {
@@ -62,10 +62,10 @@ void TableSnapshotOptimized::preWarmSnapshot() const
 void TableSnapshotOptimized::initSnapshotAsync() const
 {
     LOG_TRACE(log, "Starting async snapshot initialization");
-    
+
     /// Use the original implementation but run it in a background thread
     TableSnapshot::initSnapshotImpl();
-    
+
     LOG_TRACE(log, "Async snapshot initialization completed");
 }
 
@@ -74,14 +74,14 @@ void TableSnapshotOptimized::initSnapshot() const
     /// Fast path: if already initialized, return immediately
     if (snapshot_initialized.load() && kernel_snapshot_state)
         return;
-        
+
     /// Check if async initialization is in progress
     {
         std::lock_guard lock(snapshot_future_mutex);
         if (snapshot_future.valid())
         {
             LOG_TRACE(log, "Waiting for async snapshot initialization to complete");
-            
+
             /// Wait for the async initialization to complete
             /// This blocks the main thread, but only after async work has started
             try
@@ -95,11 +95,11 @@ void TableSnapshotOptimized::initSnapshot() const
             }
         }
     }
-    
+
     /// If async initialization completed successfully, we're done
     if (snapshot_initialized.load() && kernel_snapshot_state)
         return;
-        
+
     /// Fallback to synchronous initialization
     LOG_TRACE(log, "Falling back to synchronous snapshot initialization");
     TableSnapshot::initSnapshotImpl();

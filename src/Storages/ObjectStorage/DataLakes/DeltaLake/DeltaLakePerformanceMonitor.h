@@ -28,36 +28,36 @@ public:
         size_t cache_misses{0};
         bool used_optimizations{false};
     };
-    
+
     static DeltaLakePerformanceMonitor & instance();
-    
+
     /// Start tracking performance for a specific operation
     void startOperation(const String & operation_id, const String & table_path);
-    
+
     /// End tracking and record metrics
     void endOperation(const String & operation_id, const PerformanceMetrics & metrics);
-    
+
     /// Get performance summary for a table
     PerformanceMetrics getTableMetrics(const String & table_path) const;
-    
+
     /// Get global performance statistics
     PerformanceMetrics getGlobalMetrics() const;
-    
+
     /// Check if performance is acceptable (sub-second goal)
     bool isPerformanceAcceptable(const String & table_path) const;
-    
+
     /// Get optimization recommendations
     std::vector<String> getOptimizationRecommendations(const String & table_path) const;
-    
+
     /// Log performance summary
     void logPerformanceSummary(const String & table_path, ContextPtr context) const;
-    
+
 private:
     mutable std::mutex metrics_mutex_;
     std::unordered_map<String, PerformanceMetrics> table_metrics_;
     std::unordered_map<String, std::chrono::steady_clock::time_point> operation_start_times_;
     PerformanceMetrics global_metrics_;
-    
+
     static constexpr std::chrono::milliseconds ACCEPTABLE_SNAPSHOT_TIME{1000}; // 1 second goal
     static constexpr std::chrono::milliseconds ACCEPTABLE_METADATA_TIME{500};  // 0.5 second goal
     static constexpr std::chrono::milliseconds ACCEPTABLE_S3_LIST_TIME{300};   // 0.3 second goal
@@ -69,7 +69,7 @@ class PerformanceTracker
 public:
     PerformanceTracker(const String & operation_id, const String & table_path);
     ~PerformanceTracker();
-    
+
     void recordSnapshotInitTime(std::chrono::milliseconds time);
     void recordMetadataScanTime(std::chrono::milliseconds time);
     void recordS3ListTime(std::chrono::milliseconds time);
@@ -77,7 +77,7 @@ public:
     void recordCacheHit();
     void recordCacheMiss();
     void recordOptimizationUsed();
-    
+
 private:
     String operation_id_;
     String table_path_;

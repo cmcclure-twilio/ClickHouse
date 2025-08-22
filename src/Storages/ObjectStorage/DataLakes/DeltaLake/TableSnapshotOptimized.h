@@ -27,10 +27,10 @@ public:
 
     /// Override to provide async initialization
     void initSnapshot() const override;
-    
+
     /// Pre-warm the snapshot asynchronously in background
     void preWarmSnapshot() const;
-    
+
     /// Check if snapshot is ready (non-blocking)
     bool isSnapshotReady() const;
 
@@ -39,10 +39,10 @@ private:
     mutable std::mutex snapshot_future_mutex;
     mutable std::atomic<bool> snapshot_initialized{false};
     mutable std::atomic<bool> snapshot_warming{false};
-    
+
     /// Background snapshot initialization
     void initSnapshotAsync() const;
-    
+
     /// Thread pool for async operations
     static ThreadPool & getAsyncPool();
 };

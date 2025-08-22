@@ -100,7 +100,7 @@ Expected performance improvements:
 ```sql
 SET delta_lake_enable_optimized_s3_client = 1;
 
-SELECT * FROM url('s3://bucket/delta-table/', 'DeltaLake') 
+SELECT * FROM url('s3://bucket/delta-table/', 'DeltaLake')
 WHERE date_column >= '2024-01-01'
 LIMIT 1000;
 ```
@@ -124,7 +124,7 @@ clickhouse-client < performance_test_delta_lake.sql
 ### Files Modified/Created
 
 1. **`KernelHelperOptimized.h/cpp`** - Enhanced S3 client configuration
-2. **`TableSnapshotOptimized.h/cpp`** - Async snapshot initialization  
+2. **`TableSnapshotOptimized.h/cpp`** - Async snapshot initialization
 3. **`TableSnapshotCache.h/cpp`** - Snapshot caching layer
 4. **`DeltaLakeMetadataDeltaKernel.cpp`** - Integration of optimizations
 5. **`Settings.cpp`** - New configuration setting
@@ -150,20 +150,20 @@ Track optimization effectiveness via:
 
 ```sql
 -- Check if optimizations are enabled
-SELECT name, value FROM system.settings 
+SELECT name, value FROM system.settings
 WHERE name = 'delta_lake_enable_optimized_s3_client';
 
 -- Monitor query timing
-SELECT query_duration_ms, query 
-FROM system.query_log 
-WHERE query LIKE '%DeltaLake%' 
+SELECT query_duration_ms, query
+FROM system.query_log
+WHERE query LIKE '%DeltaLake%'
 ORDER BY event_time DESC LIMIT 10;
 ```
 
 ## Future Improvements
 
 1. **Metadata Prefetching**: Pre-load metadata for recently accessed tables
-2. **Connection Warming**: Keep S3 connections warm between queries  
+2. **Connection Warming**: Keep S3 connections warm between queries
 3. **Parallel Metadata Reading**: Read multiple `_delta_log` files concurrently
 4. **Smart Cache Invalidation**: Detect table changes and invalidate cache
 5. **Metrics Integration**: Add detailed performance metrics and monitoring

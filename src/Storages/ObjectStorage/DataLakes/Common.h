@@ -24,7 +24,7 @@ std::vector<String> listFiles(
 std::vector<String> listFilesOptimized(
     const IObjectStorage & object_storage,
     const StorageObjectStorageConfiguration & configuration,
-    const String & prefix, 
+    const String & prefix,
     const String & suffix,
     ContextPtr context = nullptr);
 

@@ -29,55 +29,55 @@ ObjectMetadataBatch::ObjectMetadataBatch(
 {
 }
 
-std::unordered_map<std::string, ObjectMetadata> 
+std::unordered_map<std::string, ObjectMetadata>
 ObjectMetadataBatch::getObjectsMetadata(const std::vector<std::string> & object_keys)
 {
     if (object_keys.empty())
         return {};
 
-    LOG_TRACE(log, "Getting metadata for {} objects in batches of {}", 
+    LOG_TRACE(log, "Getting metadata for {} objects in batches of {}",
               object_keys.size(), batch_size);
-    
+
     ProfileEvents::increment(ProfileEvents::DeltaLakeObjectMetadataBatched);
-    
+
     std::unordered_map<std::string, ObjectMetadata> results;
     results.reserve(object_keys.size());
-    
+
     /// Process objects in batches to avoid overwhelming S3
     for (size_t i = 0; i < object_keys.size(); i += batch_size)
     {
         size_t end_idx = std::min(i + batch_size, object_keys.size());
         std::vector<std::string> batch(object_keys.begin() + i, object_keys.begin() + end_idx);
-        
+
         auto batch_results = getObjectsMetadataBatch(batch);
-        
+
         /// Merge results
         for (auto && [key, metadata] : batch_results)
         {
             results[key] = std::move(metadata);
         }
     }
-    
+
     LOG_TRACE(log, "Completed metadata fetching for {} objects", results.size());
     return results;
 }
 
-std::unordered_map<std::string, ObjectMetadata> 
+std::unordered_map<std::string, ObjectMetadata>
 ObjectMetadataBatch::getObjectsMetadataBatch(const std::vector<std::string> & batch_keys)
 {
     if (batch_keys.empty())
         return {};
-        
+
     ProfileEvents::increment(ProfileEvents::DeltaLakeObjectMetadataParallel);
-    
+
     std::unordered_map<std::string, ObjectMetadata> results;
     results.reserve(batch_keys.size());
-    
+
     /// Determine optimal parallelism for this batch
     const size_t num_threads = std::min(
-        batch_keys.size(), 
+        batch_keys.size(),
         static_cast<size_t>(max_parallel_requests));
-    
+
     if (num_threads <= 1)
     {
         /// Sequential processing for small batches
@@ -98,12 +98,12 @@ ObjectMetadataBatch::getObjectsMetadataBatch(const std::vector<std::string> & ba
         }
         return results;
     }
-    
+
     /// Parallel processing for larger batches
     ThreadPool pool(num_threads, num_threads, 100);
     std::mutex results_mutex;
     std::vector<std::future<void>> futures;
-    
+
     for (const auto & key : batch_keys)
     {
         auto future = pool.scheduleOrThrow([this, &key, &results, &results_mutex]()
@@ -124,24 +124,24 @@ ObjectMetadataBatch::getObjectsMetadataBatch(const std::vector<std::string> & ba
         });
         futures.push_back(std::move(future));
     }
-    
+
     /// Wait for all requests to complete
     for (auto & future : futures)
     {
         future.get();
     }
-    
+
     return results;
 }
 
-std::optional<ObjectMetadata> 
+std::optional<ObjectMetadata>
 ObjectMetadataBatch::getObjectMetadataSingle(const std::string & object_key)
 {
     try
     {
         auto object_info = S3::getObjectInfo(
-            *s3_client, bucket_name, object_key, {}, 
-            /* with_metadata= */ true, 
+            *s3_client, bucket_name, object_key, {},
+            /* with_metadata= */ true,
             /* throw_on_error= */ false);
 
         if (object_info.size == 0 && object_info.last_modification_time == 0)
@@ -205,9 +205,9 @@ public:
                 return nullptr;
 
             auto key = data_files[current_index];
-            
+
             ObjectMetadata metadata;
-            
+
             /// Try to get from pre-fetched cache first
             auto cache_it = metadata_cache.find(key);
             if (cache_it != metadata_cache.end())
@@ -233,13 +233,13 @@ private:
         try
         {
             LOG_TRACE(log, "Pre-fetching metadata for {} files", data_files.size());
-            
+
             auto s3_client = s3_storage->getS3StorageClient();
             auto bucket = s3_storage->getObjectsNamespace();
-            
+
             ObjectMetadataBatch batch_fetcher(s3_client, bucket, 50, 10);
             metadata_cache = batch_fetcher.getObjectsMetadata(data_files);
-            
+
             LOG_TRACE(log, "Pre-fetched metadata for {} files", metadata_cache.size());
         }
         catch (const std::exception & e)
