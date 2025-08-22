@@ -91,7 +91,7 @@ endif ()
 message(STATUS "Using install-name-tool: ${CMAKE_INSTALL_NAME_TOOL}")
 
 # Objcopy
-ch_find_program (OBJCOPY_PATH NAMES "llvm-objcopy-${COMPILER_VERSION_MAJOR}" "llvm-objcopy" "objcopy")
+ch_find_program (OBJCOPY_PATH NAMES "llvm-objcopy-${COMPILER_VERSION_MAJOR}" "llvm-objcopy" "objcopy" PATHS="/usr/local/Cellar/binutils/2.45/bin/")
 if (OBJCOPY_PATH)
     message (STATUS "Using objcopy: ${OBJCOPY_PATH}")
 else ()

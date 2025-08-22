@@ -576,6 +576,14 @@ The server successfully detected this situation and will download merged part fr
     M(S3UploadPartCopy, "Number of S3 API UploadPartCopy calls.", ValueType::Number) \
     M(S3UploadPart, "Number of S3 API UploadPart calls.", ValueType::Number) \
     M(S3AbortMultipartUpload, "Number of S3 API AbortMultipartUpload calls.", ValueType::Number) \
+    \
+    M(S3OptimizedClientCreated, "Number of optimized S3 clients created for Delta Lake operations.", ValueType::Number) \
+    M(S3OptimizedConfigurationApplied, "Number of times S3 configuration was optimized for Delta Lake.", ValueType::Number) \
+    M(S3DeltaLakeClientOptimizations, "Number of Delta Lake specific S3 client optimizations applied.", ValueType::Number) \
+    M(S3DeltaLakeSnapshotCacheHits, "Number of Delta Lake snapshot cache hits.", ValueType::Number) \
+    M(S3DeltaLakeSnapshotCacheMisses, "Number of Delta Lake snapshot cache misses.", ValueType::Number) \
+    M(S3DeltaLakeAsyncSnapshotInit, "Number of asynchronous Delta Lake snapshot initializations.", ValueType::Number) \
+    M(S3DeltaLakeMetadataProcessingOptimized, "Number of optimized Delta Lake metadata processing operations.", ValueType::Number) \
     M(S3CompleteMultipartUpload, "Number of S3 API CompleteMultipartUpload calls.", ValueType::Number) \
     M(S3PutObject, "Number of S3 API PutObject calls.", ValueType::Number) \
     M(S3GetObject, "Number of S3 API GetObject calls.", ValueType::Number) \
