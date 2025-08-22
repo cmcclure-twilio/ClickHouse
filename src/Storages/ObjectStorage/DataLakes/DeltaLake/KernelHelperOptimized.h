@@ -9,7 +9,6 @@
 namespace DB
 {
 
-/// Optimized version of getKernelHelper with performance improvements for S3
 DeltaLake::KernelHelperPtr getKernelHelperOptimized(
     const StorageObjectStorageConfigurationPtr & configuration,
     const ObjectStoragePtr & object_storage);

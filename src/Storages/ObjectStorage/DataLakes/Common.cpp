@@ -30,7 +30,6 @@ std::vector<String> listFiles(
     return res;
 }
 
-/// Optimized version of listFiles for Delta Lake operations
 std::vector<String> listFilesOptimized(
     const IObjectStorage & object_storage,
     const StorageObjectStorageConfiguration & configuration,
@@ -40,7 +39,6 @@ std::vector<String> listFilesOptimized(
 {
     auto key = std::filesystem::path(configuration.getPathForRead().path) / prefix;
 
-    /// Check if optimizations are enabled
     bool use_optimized = true;
     if (context)
     {
@@ -48,7 +46,6 @@ std::vector<String> listFilesOptimized(
         try {
             use_optimized = settings.get("delta_lake_enable_optimized_s3_client").safeGet<bool>();
         } catch (...) {
-            /// Setting doesn't exist yet, use default
             use_optimized = false;
         }
     }
@@ -58,7 +55,6 @@ std::vector<String> listFilesOptimized(
         return listFiles(object_storage, configuration, prefix, suffix);
     }
 
-    /// Fallback to standard implementation for now
     return listFiles(object_storage, configuration, prefix, suffix);
 }
 

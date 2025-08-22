@@ -14,7 +14,6 @@
 namespace DB
 {
 
-/// Performance monitoring and optimization manager for Delta Lake S3 operations
 class DeltaLakePerformanceMonitor
 {
 public:
@@ -31,25 +30,18 @@ public:
 
     static DeltaLakePerformanceMonitor & instance();
 
-    /// Start tracking performance for a specific operation
     void startOperation(const String & operation_id, const String & table_path);
 
-    /// End tracking and record metrics
     void endOperation(const String & operation_id, const PerformanceMetrics & metrics);
 
-    /// Get performance summary for a table
     PerformanceMetrics getTableMetrics(const String & table_path) const;
 
-    /// Get global performance statistics
     PerformanceMetrics getGlobalMetrics() const;
 
-    /// Check if performance is acceptable (sub-second goal)
     bool isPerformanceAcceptable(const String & table_path) const;
 
-    /// Get optimization recommendations
     std::vector<String> getOptimizationRecommendations(const String & table_path) const;
 
-    /// Log performance summary
     void logPerformanceSummary(const String & table_path, ContextPtr context) const;
 
 private:
@@ -63,7 +55,6 @@ private:
     static constexpr std::chrono::milliseconds ACCEPTABLE_S3_LIST_TIME{300};   // 0.3 second goal
 };
 
-/// RAII helper for automatic performance tracking
 class PerformanceTracker
 {
 public:

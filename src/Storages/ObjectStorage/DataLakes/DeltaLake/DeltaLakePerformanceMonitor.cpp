@@ -135,37 +135,15 @@ std::vector<String> DeltaLakePerformanceMonitor::getOptimizationRecommendations(
 void DeltaLakePerformanceMonitor::logPerformanceSummary(const String & table_path, ContextPtr context) const
 {
     auto metrics = getTableMetrics(table_path);
-    auto recommendations = getOptimizationRecommendations(table_path);
-
-    auto logger = getLogger("DeltaLakePerformanceMonitor");
-
-    LOG_INFO(logger, "Performance Summary for Delta Lake table: {}", table_path);
-    LOG_INFO(logger, "  Snapshot initialization: {}ms (target: <{}ms)",
-             metrics.snapshot_init_time.count(), ACCEPTABLE_SNAPSHOT_TIME.count());
-    LOG_INFO(logger, "  Metadata scanning: {}ms (target: <{}ms)",
-             metrics.metadata_scan_time.count(), ACCEPTABLE_METADATA_TIME.count());
-    LOG_INFO(logger, "  S3 listing operations: {}ms (target: <{}ms)",
-             metrics.s3_list_time.count(), ACCEPTABLE_S3_LIST_TIME.count());
-    LOG_INFO(logger, "  Files processed: {}", metrics.files_processed);
-    LOG_INFO(logger, "  Cache efficiency: {:.1f}% ({} hits, {} misses)",
-             metrics.cache_hits + metrics.cache_misses > 0 ?
-                 100.0 * metrics.cache_hits / (metrics.cache_hits + metrics.cache_misses) : 0.0,
-             metrics.cache_hits, metrics.cache_misses);
-    LOG_INFO(logger, "  Optimizations enabled: {}", metrics.used_optimizations ? "Yes" : "No");
-
     bool acceptable = isPerformanceAcceptable(table_path);
-    LOG_INFO(logger, "  Performance status: {}", acceptable ? "ACCEPTABLE" : "NEEDS IMPROVEMENT");
 
-    if (!recommendations.empty())
-    {
-        LOG_INFO(logger, "  Optimization recommendations:");
-        for (const auto & rec : recommendations)
-        {
-            LOG_INFO(logger, "    - {}", rec);
-        }
-    }
+    LOG_TRACE(getLogger("DeltaLakePerformanceMonitor"),
+             "Performance summary for table {}: snapshot={}ms, metadata={}ms, s3_list={}ms, "
+             "files={}, cache_hits={}, cache_misses={}, optimizations={}, acceptable={}",
+             table_path, metrics.snapshot_init_time.count(), metrics.metadata_scan_time.count(),
+             metrics.s3_list_time.count(), metrics.files_processed, metrics.cache_hits,
+             metrics.cache_misses, metrics.used_optimizations, acceptable);
 
-    /// Update ProfileEvents
     if (metrics.used_optimizations)
     {
         ProfileEvents::increment(ProfileEvents::S3DeltaLakeMetadataProcessingOptimized);
